@@ -14,14 +14,19 @@ The discount factor balances immediate and future rewards, whereas sufficient ex
 
 ## Evaluation Metrics
 
-The learned policy can be evaluated using several performance measures:
+The learned policy can be evaluated using several performance measures.
 
-- Win rate: Percentage of games won against a random or minimax opponent.
-- Draw rate: Percentage of games ending in a draw, particularly against a minimax opponent where draws indicate strong play.
-- Loss rate: Percentage of games lost.
-- Average number of moves to win: Measures how efficiently the agent wins.
-- Average cumulative reward: Mean reward obtained over many evaluation games.
-- Training convergence: Monitoring average reward or win rate over episodes to determine whether learning has stabilized.
+Win rate is the percentage of games won against a random or minimax opponent.
+
+Draw rate is the percentage of games ending in a draw, particularly against a minimax opponent where draws indicate strong play.
+
+Loss rate is the percentage of games lost.
+
+The average number of winning moves, measures how efficiently the agent wins.
+
+The average cumulative reward stands for the mean reward obtained over many evaluation games.
+
+The training convergence is to monitor average reward or win rate over episodes to determine whether learning has stabilized.
 
 Using multiple metrics provides a comprehensive assessment of the learned policy's effectiveness, robustness, and learning progress.
 
