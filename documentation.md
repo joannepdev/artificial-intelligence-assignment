@@ -10,7 +10,7 @@ The learned latent vectors can capture similarities between different board conf
 ### Generating a dataset of board states
 
 In this example, a dataset of board states was created. It consists of valid Tic-Tac-Toe board configurations generated through gameplay simulations.
-It also collects states from random play episodes.
+It also collects states from 5000 random play episodes.
 Since states were generated only after legal moves, invalid configurations are avoided.
 An invalid configuration example is the number of impossible differences between X and O marks, where both players have winning lines simultaneously.
 
