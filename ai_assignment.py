@@ -919,3 +919,156 @@ def baseline_action(board):
             return None
 
         return random.choice(available_actions)
+
+# compare VAE agent with baseline agent
+
+def vae_action(board):
+
+    # encode current board
+    z_board = encoder.predict(
+        board.reshape(1, -1),
+        verbose=0
+    )[0]
+
+
+    # calculate distances
+    distances = np.linalg.norm(
+        latent_states - z_board,
+        axis=1
+    )
+
+
+    # find 10 nearest latent states
+    nearest_indices = np.argpartition(
+        distances,
+        10
+    )[:10]
+
+
+    estimated_q = {}
+
+    sigma = max(
+        np.median(distances[nearest_indices]),
+        1e-8
+    )
+
+
+    for action in get_available_actions(board):
+
+        numerator = 0
+        denominator = 0
+
+        for i in nearest_indices:
+
+            state = tuple(latent_boards[i])
+
+            if (state, action) in Q:
+
+                distance = distances[i]
+
+                weight = np.exp(
+                    -(distance**2) / (sigma**2)
+                )
+
+                numerator += weight * Q[(state, action)]
+                denominator += weight
+
+
+        if denominator > 0:
+            estimated_q[action] = numerator / denominator
+
+
+    if estimated_q:
+
+        return max(
+            estimated_q,
+            key=estimated_q.get
+        )
+
+
+    return random.choice(
+        get_available_actions(board)
+    )
+
+# check if an action is safe
+
+def is_safe_action(board, action, agent_player, opponent_player):
+
+    # copy board so the original is not modified
+    test_board = board.copy()
+
+    # simulate agent's move
+    make_move(
+        test_board,
+        action,
+        agent_player
+    )
+
+    # check opponent's possible moves
+    opponent_actions = get_available_actions(test_board)
+
+    for opp_action in opponent_actions:
+
+        temp_board = test_board.copy()
+
+        make_move(
+            temp_board,
+            opp_action,
+            opponent_player
+        )
+
+        # opponent can win immediately
+        if check_winner(
+            temp_board,
+            opponent_player
+        ):
+            return False
+
+    return True
+
+# evaluate safe actions for both agents
+
+def evaluate_safe_actions(unseen_boards):
+
+    baseline_safe = 0
+    vae_safe = 0
+    evaluated_boards = 0
+
+    for board in unseen_boards:
+
+        # get actions from both agents
+        baseline_move = baseline_action(board)
+        vae_move = vae_action(board)
+
+        # skip if an agent cannot move
+        if baseline_move is None or vae_move is None:
+            continue
+
+
+        # check baseline safety
+        if is_safe_action(
+            board,
+            baseline_move,
+            PLAYER_O,
+            PLAYER_X
+        ):
+            baseline_safe += 1
+
+
+        # check VAE safety
+        if is_safe_action(
+            board,
+            vae_move,
+            PLAYER_X,
+            PLAYER_O
+        ):
+            vae_safe += 1
+
+
+        evaluated_boards += 1
+
+
+    baseline_rate = baseline_safe / evaluated_boards * 100
+    vae_rate = vae_safe / evaluated_boards * 100
+
+    return baseline_rate, vae_rate
